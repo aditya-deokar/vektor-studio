@@ -1,9 +1,8 @@
 "use server"
 
-import { anthropic } from "@ai-sdk/anthropic"
 import { auth } from "@clerk/nextjs/server"
 import * as Sentry from "@sentry/nextjs"
-import { generateText } from "ai"
+import { generateText, type LanguageModel } from "ai"
 import { and, eq } from "drizzle-orm"
 import { refresh } from "next/cache"
 import { redirect } from "next/navigation"
@@ -18,10 +17,31 @@ import {
   type GameModelId,
   isGameModelId,
 } from "@/lib/games/model-catalog"
+import { gameModels } from "@/lib/games/models"
 import { truncateTitle } from "@/lib/games/title"
 import { describeError, elapsed } from "@/lib/observability"
 
-const TITLE_MODEL = "claude-haiku-4-5"
+/**
+ * Resolves a fast, cost-effective model for naming games based on configured API keys.
+ */
+function resolveTitleModel(): { model: LanguageModel; id: string } {
+  if (process.env.ANTHROPIC_API_KEY) {
+    return { model: gameModels["claude-haiku-4-5"], id: "claude-haiku-4-5" }
+  }
+  if (process.env.OPENAI_API_KEY) {
+    return { model: gameModels["gpt-4o-mini"], id: "gpt-4o-mini" }
+  }
+  if (process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY) {
+    return { model: gameModels["gemini-2.5-flash"], id: "gemini-2.5-flash" }
+  }
+  if (process.env.OPENCODE_ZEN_API_KEY || process.env.OPENCODE_API_KEY) {
+    return { model: gameModels["opencode-zen-fast"], id: "opencode-zen-fast" }
+  }
+  return {
+    model: gameModels[DEFAULT_GAME_MODEL_ID],
+    id: DEFAULT_GAME_MODEL_ID,
+  }
+}
 
 /**
  * Names a game after the prompt it was created from.
@@ -33,10 +53,11 @@ const TITLE_MODEL = "claude-haiku-4-5"
  */
 async function generateTitle(prompt: string) {
   const startedAt = performance.now()
+  const titleModel = resolveTitleModel()
 
   try {
     const { text } = await generateText({
-      model: anthropic(TITLE_MODEL),
+      model: titleModel.model,
       instructions:
         "You name games from the prompt that created them. Reply with a title " +
         "of at most four words in title case. No quotes, no punctuation at the " +
@@ -54,7 +75,7 @@ async function generateTitle(prompt: string) {
       // below, and one only a log would ever show.
       Sentry.logger.warn("Title model returned nothing usable", {
         "gen_ai.operation.name": "generate_content",
-        "gen_ai.request.model": TITLE_MODEL,
+        "gen_ai.request.model": titleModel.id,
         duration_ms: elapsed(startedAt),
       })
     }
@@ -66,7 +87,7 @@ async function generateTitle(prompt: string) {
     // looks from the outside like a product that stopped naming games.
     Sentry.logger.warn("Title generation failed, falling back to the prompt", {
       "gen_ai.operation.name": "generate_content",
-      "gen_ai.request.model": TITLE_MODEL,
+      "gen_ai.request.model": titleModel.id,
       ...describeError(error),
       duration_ms: elapsed(startedAt),
     })

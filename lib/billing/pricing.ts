@@ -41,6 +41,7 @@ type ModelRates = {
  * turn at zero.
  */
 export const MODEL_RATES = {
+  // Anthropic
   "claude-opus-5": {
     input: perMillionTokens(5),
     cacheRead: perMillionTokens(0.5),
@@ -58,6 +59,54 @@ export const MODEL_RATES = {
     cacheRead: perMillionTokens(0.1),
     cacheWrite: perMillionTokens(1.25),
     output: perMillionTokens(5),
+  },
+
+  // OpenAI
+  "gpt-4o": {
+    input: perMillionTokens(2.5),
+    cacheRead: perMillionTokens(1.25),
+    cacheWrite: perMillionTokens(2.5),
+    output: perMillionTokens(10),
+  },
+  "gpt-4o-mini": {
+    input: perMillionTokens(0.15),
+    cacheRead: perMillionTokens(0.075),
+    cacheWrite: perMillionTokens(0.15),
+    output: perMillionTokens(0.6),
+  },
+  "o3-mini": {
+    input: perMillionTokens(1.1),
+    cacheRead: perMillionTokens(0.55),
+    cacheWrite: perMillionTokens(1.1),
+    output: perMillionTokens(4.4),
+  },
+
+  // Google Gemini
+  "gemini-2.5-pro": {
+    input: perMillionTokens(1.25),
+    cacheRead: perMillionTokens(0.31),
+    cacheWrite: perMillionTokens(1.25),
+    output: perMillionTokens(5),
+  },
+  "gemini-2.5-flash": {
+    input: perMillionTokens(0.15),
+    cacheRead: perMillionTokens(0.04),
+    cacheWrite: perMillionTokens(0.15),
+    output: perMillionTokens(0.6),
+  },
+
+  // OpenCode Zen (OpenAI-compatible)
+  "opencode-zen": {
+    input: perMillionTokens(2),
+    cacheRead: perMillionTokens(0.2),
+    cacheWrite: perMillionTokens(2.5),
+    output: perMillionTokens(10),
+  },
+  "opencode-zen-fast": {
+    input: perMillionTokens(0.15),
+    cacheRead: perMillionTokens(0.075),
+    cacheWrite: perMillionTokens(0.15),
+    output: perMillionTokens(0.6),
   },
 } satisfies Record<GameModelId, ModelRates>
 

@@ -61,10 +61,14 @@ Ensure you have the following installed and set up:
 - **Package Manager**: `pnpm` (recommended) or `npm`
 - **Accounts & API Keys**:
   - [Daytona](https://www.daytona.io/) API Key & Target
-  - [Anthropic](https://console.anthropic.com/) API Key
   - [Trigger.dev](https://trigger.dev/) Account & Project
   - [Clerk](https://clerk.com/) Application Keys
   - [Neon Postgres](https://neon.tech/) Database Connection String
+  - **LLM Providers (configure whichever you want to use)**:
+    - [Anthropic](https://console.anthropic.com/) API Key (`ANTHROPIC_API_KEY`)
+    - [OpenAI](https://platform.openai.com/) API Key (`OPENAI_API_KEY`)
+    - [Google AI Studio](https://aistudio.google.com/) API Key (`GOOGLE_GENERATIVE_AI_API_KEY`)
+    - [OpenCode Zen](https://opencode.ai/) API Key & Base URL (`OPENCODE_ZEN_API_KEY`, `OPENCODE_ZEN_BASE_URL`)
 
 ---
 
@@ -96,8 +100,16 @@ Ensure you have the following installed and set up:
    DAYTONA_TARGET=...
 
    # AI & Trigger.dev
-   ANTHROPIC_API_KEY=sk-ant-...
    TRIGGER_SECRET_KEY=tr_dev_...
+
+   # LLM Providers (Supply API keys for models you wish to use)
+   ANTHROPIC_API_KEY=sk-ant-...
+   OPENAI_API_KEY=sk-proj-...
+   GOOGLE_GENERATIVE_AI_API_KEY=...
+   OPENCODE_ZEN_API_KEY=...
+   # OPENCODE_ZEN_BASE_URL=https://zen.opencode.ai/v1 (optional, defaults to https://zen.opencode.ai/v1)
+   # OPENCODE_ZEN_MODEL=claude-3-7-sonnet (optional override)
+   # OPENCODE_ZEN_FAST_MODEL=gpt-4o-mini (optional override)
 
    # Neon Database (Drizzle ORM)
    DATABASE_URL=postgres://...

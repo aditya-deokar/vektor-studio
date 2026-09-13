@@ -5,23 +5,26 @@ import { ChevronDownIcon, GripIcon } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { InputGroupButton } from "@/components/ui/input-group"
-import { GAME_MODELS, type GameModelId } from "@/lib/games/model-catalog"
+import {
+  GAME_MODELS,
+  MODEL_PROVIDERS,
+  type GameModelId,
+} from "@/lib/games/model-catalog"
 
 /**
  * Which model the next turn is built with.
  *
  * Controlled, and deliberately owns nothing: the selection belongs to whoever
  * is sending the turns, because that is who has to put it on the wire. This
- * only renders the catalog and reports a pick.
- *
- * A radio group rather than plain items, so the menu says which model is
- * running as well as which are available — the check is the answer to "what am
- * I on?", which the trigger can only give in the abbreviated form of a name.
+ * renders the catalog grouped by provider and reports a pick.
  */
 export function ModelPicker({
   modelId,
@@ -30,8 +33,6 @@ export function ModelPicker({
   modelId: GameModelId
   onModelChange: (modelId: GameModelId) => void
 }) {
-  // Total in practice — `GameModelId` is derived from this same list — but not
-  // provably so to the type checker, and the trigger has to render something.
   const selected = GAME_MODELS.find((model) => model.id === modelId)
 
   return (
@@ -45,30 +46,49 @@ export function ModelPicker({
           </InputGroupButton>
         }
       />
-      {/* Wide enough for a tagline to sit on one or two lines rather than the
-          trigger's width, which is one short name. */}
-      <DropdownMenuContent className="w-72">
+      <DropdownMenuContent className="max-h-96 w-80 overflow-y-auto">
         <DropdownMenuRadioGroup
           value={modelId}
-          // The group's value is one of these ids by construction — the items
-          // below are the only things that can set it — but `RadioGroup` is
-          // typed for arbitrary values and can't know that.
           onValueChange={(value) => onModelChange(value as GameModelId)}
         >
-          {GAME_MODELS.map((model) => (
-            <DropdownMenuRadioItem
-              key={model.id}
-              value={model.id}
-              className="py-1.5"
-            >
-              <div className="flex flex-col gap-0.5">
-                <span className="font-medium">{model.name}</span>
-                <span className="text-xs text-muted-foreground">
-                  {model.tagline}
-                </span>
-              </div>
-            </DropdownMenuRadioItem>
-          ))}
+          {MODEL_PROVIDERS.map((provider, index) => {
+            const providerModels = GAME_MODELS.filter(
+              (model) => model.provider === provider.id
+            )
+            if (providerModels.length === 0) return null
+
+            return (
+              <DropdownMenuGroup key={provider.id}>
+                {index > 0 && <DropdownMenuSeparator />}
+                <DropdownMenuLabel className="px-2 py-1 text-[11px] font-semibold tracking-wider text-muted-foreground/80 uppercase">
+                  {provider.name}
+                </DropdownMenuLabel>
+                {providerModels.map((model) => (
+                  <DropdownMenuRadioItem
+                    key={model.id}
+                    value={model.id}
+                    className="cursor-pointer py-1.5"
+                  >
+                    <div className="flex w-full flex-col gap-0.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium">
+                          {model.name}
+                        </span>
+                        {model.badge && (
+                          <span className="rounded border border-border/50 bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            {model.badge}
+                          </span>
+                        )}
+                      </div>
+                      <span className="line-clamp-2 text-xs text-muted-foreground">
+                        {model.tagline}
+                      </span>
+                    </div>
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuGroup>
+            )
+          })}
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
